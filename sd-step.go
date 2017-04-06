@@ -17,19 +17,7 @@ var VERSION string
 
 var habPath = "/opt/sd/bin/hab"
 var versionValidator = regexp.MustCompile(`^\d+(\.\d+)*$`)
-var fprintf = fmt.Fprintf
 var execCommand = exec.Command
-
-// finalRecover makes one last attempt to recover from a panic.
-// This should only happen if the previous recovery caused a panic.
-func finalRecover() {
-	if p := recover(); p != nil {
-		fmt.Fprintln(os.Stderr, "ERROR: Something terrible has happened. Please file a ticket with this info:")
-		fmt.Fprintf(os.Stderr, "ERROR: %v\n%v\n", p, debug.Stack())
-		failureExit(nil)
-	}
-	successExit()
-}
 
 // successExit exits process with 0
 func successExit() {
@@ -42,6 +30,17 @@ func failureExit(err error) {
 		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 	}
 	os.Exit(1)
+}
+
+// finalRecover makes one last attempt to recover from a panic.
+// This should only happen if the previous recovery caused a panic.
+func finalRecover() {
+	if p := recover(); p != nil {
+		fmt.Fprintln(os.Stderr, "ERROR: Something terrible has happened. Please file a ticket with this info:")
+		fmt.Fprintf(os.Stderr, "ERROR: %v\n%v\n", p, debug.Stack())
+		failureExit(nil)
+	}
+	successExit()
 }
 
 // translatePkgName translates the pkgName if pkgVersion is specified
