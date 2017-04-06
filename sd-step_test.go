@@ -26,7 +26,7 @@ func TestRunCommand(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	err := runCommand("hab pkg install foo/bar", stdout)
 	expected := "run hab pkg install\n"
-	if string(stdout.Bytes()) != expected {
+	if err != nil {
 		t.Errorf("runCommand error = %q, should be nil", err)
 	}
 	if string(stdout.Bytes()) != expected {
