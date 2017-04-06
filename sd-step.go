@@ -65,13 +65,12 @@ func runCommand(command string, output io.Writer) error {
 
 // execHab installs habitat package and executes habitat command
 func execHab(pkgName string, pkgVersion string, command []string, output io.Writer) error {
-	var installCmd []string
 	pkg, verErr := translatePkgName(pkgName, pkgVersion)
 	if verErr != nil {
 		return verErr
 	}
 
-	installCmd = []string{habPath, "pkg", "install", pkg}
+	installCmd := []string{habPath, "pkg", "install", pkg}
 	unwrappedInstallCommand := strings.Join(installCmd, " ")
 	installErr := runCommand(unwrappedInstallCommand, output)
 	if installErr != nil {
