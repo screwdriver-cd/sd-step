@@ -17,9 +17,9 @@ jobs:
 
     deploy:
         steps:
-#            - setup-ci: git clone https://gist.github.com/3d2388b2a7ba658cdcdaffa8cd874e50.git ci
-#            - get: go get -t ./...
-#            - gofmt: "find . -name '*.go' | xargs gofmt -s -w"
+            - setup-ci: git clone https://gist.github.com/3d2388b2a7ba658cdcdaffa8cd874e50.git ci
+            - get: go get -t ./...
+            - gofmt: "find . -name '*.go' | xargs gofmt -s -w"
             - build: go build -a -o sd-step
             - get-bzip2: apt-get update && apt-get install -y --no-install-recommends bzip2
             - tag: ./ci/git-tag.sh
