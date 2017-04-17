@@ -69,7 +69,7 @@ func execHab(pkgName string, pkgVersion string, command []string, output io.Writ
 		return verErr
 	}
 
-	installCmd := []string{habPath, "pkg", "install", pkg, "1>/dev/null"}
+	installCmd := []string{habPath, "pkg", "install", pkg, ">/dev/null"}
 	unwrappedInstallCommand := strings.Join(installCmd, " ")
 	installErr := runCommand(unwrappedInstallCommand, output)
 	if installErr != nil {
