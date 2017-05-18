@@ -1,19 +1,25 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"regexp"
 	"runtime/debug"
+	"sort"
 	"strings"
 
+	"github.com/Masterminds/semver"
+	"github.com/screwdriver-cd/sd-step/hab"
 	"github.com/urfave/cli"
 )
 
 // VERSION gets set by the build script via the LDFLAGS
 var VERSION string
+
+var HAB_DEPOT_URL = "https://willem.habitat.sh/v1/depot"
 
 var habPath = "/opt/sd/bin/hab"
 var versionValidator = regexp.MustCompile(`^\d+(\.\d+)*$`)
@@ -86,10 +92,49 @@ func execHab(pkgName string, pkgVersion string, command []string, output io.Writ
 	return nil
 }
 
+// getPackageVersion returns the appropriate package version which matched the `pkgVerExp` expression.
+func getPackageVersion(depot hab.Depot, pkgName, pkgVerExp string) (string, error) {
+	versionConst, err := semver.NewConstraint(pkgVerExp)
+	// if pkgVerExp is invalid for semver expression, it returns pkgVerExp as it is
+	if err != nil {
+		return pkgVerExp, nil
+	}
+
+	foundVersions, err := depot.PackageVersionsFromName(pkgName)
+	if err != nil {
+		return "", errors.New(fmt.Sprintf("Failed to fetch package versions: %v", err))
+	}
+
+	var versions []*semver.Version
+	for _, version := range foundVersions {
+		// if version exactly matches pkgVersionExp, it returns the version
+		if version == pkgVerExp {
+			return version, nil
+		}
+
+		v, err := semver.NewVersion(version)
+		if err != nil {
+			continue
+		}
+
+		if versionConst.Check(v) {
+			versions = append(versions, v)
+		}
+	}
+
+	if len(versions) == 0 {
+		return "", errors.New("The specified version not found")
+	}
+
+	sort.Sort(sort.Reverse(semver.Collection(versions)))
+
+	return versions[0].String(), nil
+}
+
 func main() {
 	defer finalRecover()
 
-	var pkgVersion string
+	var pkgVerExp string
 
 	app := cli.NewApp()
 	app.Name = "sd-step"
@@ -105,9 +150,9 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "pkg-version",
-			Usage:       "Package version",
+			Usage:       "Package version which also accepts semver expression",
 			Value:       "",
-			Destination: &pkgVersion,
+			Destination: &pkgVerExp,
 		},
 	}
 
@@ -119,7 +164,17 @@ func main() {
 				if len(c.Args()) < 2 {
 					return cli.ShowAppHelp(c)
 				}
-				err := execHab(c.Args().Get(0), pkgVersion, c.Args().Tail(), os.Stdout)
+
+				pkgName := c.Args().Get(0)
+
+				depot := hab.New(HAB_DEPOT_URL)
+				pkgVersion, err := getPackageVersion(depot, pkgName, pkgVerExp)
+
+				if err != nil {
+					failureExit(errors.New(fmt.Sprintf("Failed to get package version: %v", err)))
+				}
+
+				err = execHab(pkgName, pkgVersion, c.Args().Tail(), os.Stdout)
 				if err != nil {
 					failureExit(err)
 				}
