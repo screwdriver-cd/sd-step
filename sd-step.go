@@ -20,7 +20,7 @@ import (
 var VERSION string
 
 // HAB_DEPOT_URL is base url for public depot of habitat
-var HAB_DEPOT_URL = "https://willem.habitat.sh/v1/depot"
+const habDepotURL = "https://willem.habitat.sh/v1/depot"
 
 var habPath = "/opt/sd/bin/hab"
 var versionValidator = regexp.MustCompile(`^\d+(\.\d+)*$`)
@@ -103,7 +103,7 @@ func getPackageVersion(depot hab.Depot, pkgName, pkgVerExp string) (string, erro
 
 	foundVersions, err := depot.PackageVersionsFromName(pkgName)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Failed to fetch package versions: %v", err))
+		return "", fmt.Errorf("Failed to fetch package versions: %v", err)
 	}
 
 	var versions []*semver.Version
@@ -168,11 +168,11 @@ func main() {
 
 				pkgName := c.Args().Get(0)
 
-				depot := hab.New(HAB_DEPOT_URL)
+				depot := hab.New(habDepotURL)
 				pkgVersion, err := getPackageVersion(depot, pkgName, pkgVerExp)
 
 				if err != nil {
-					failureExit(errors.New(fmt.Sprintf("Failed to get package version: %v", err)))
+					failureExit(fmt.Errorf("Failed to get package version: %v", err))
 				}
 
 				err = execHab(pkgName, pkgVersion, c.Args().Tail(), os.Stdout)

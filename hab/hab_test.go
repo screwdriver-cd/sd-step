@@ -12,11 +12,11 @@ import (
 	"testing"
 )
 
-var TEST_HAB_URL = "http://foo.com/v1/depot"
+var testHabURL = "http://foo.com/v1/depot"
 
 type testData struct {
 	packageName   string
-	packages      []PackagesInfo
+	body          interface{}
 	expected      []string
 	statusCode    int
 	httpError     error
@@ -26,25 +26,32 @@ type testData struct {
 func makeFakeHTTPClient(t *testing.T, data testData) *http.Client {
 	count := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pkgsInfo := data.packages[count]
-		JSON, err := json.Marshal(pkgsInfo)
+		var JSON string
 
-		count += 1
-
-		if err != nil {
-			t.Fatalf("Unable to Marshal JSON for PackagesInfo: %v", err)
+		if pkgsData, ok := data.body.([]PackagesInfo); ok {
+			pkgsInfo := pkgsData[count]
+			count++
+			bytes, err := json.Marshal(pkgsInfo)
+			if err != nil {
+				t.Fatalf("Unable to Marshal JSON for PackagesInfo: %v", err)
+			}
+			JSON = string(bytes)
+		} else if strData, ok := data.body.(string); ok {
+			JSON = strData
+		} else {
+			t.Fatalf("The test data for a request body is strange data type: %v, it expected []PackagesInfo or string", reflect.TypeOf(data.body))
 		}
 
 		w.WriteHeader(data.statusCode)
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, string(JSON))
+		fmt.Fprintln(w, JSON)
 	}))
 
 	transport := &http.Transport{
 		Proxy: func(req *http.Request) (*url.URL, error) {
-			expectedUrl := fmt.Sprintf("%s/pkgs/%s", TEST_HAB_URL, data.packageName)
-			if !strings.HasPrefix(req.URL.String(), expectedUrl) {
-				t.Errorf("Requested URL is %s, but it should start with %s", req.URL, expectedUrl)
+			expectedURL := fmt.Sprintf("%s/pkgs/%s", testHabURL, data.packageName)
+			if !strings.HasPrefix(req.URL.String(), expectedURL) {
+				t.Errorf("Requested URL is %s, but it should start with %s", req.URL, expectedURL)
 			}
 			return url.Parse(server.URL)
 		},
@@ -53,11 +60,15 @@ func makeFakeHTTPClient(t *testing.T, data testData) *http.Client {
 	return &http.Client{Transport: transport}
 }
 
+func jsonError(JSON string) error {
+	return json.Unmarshal([]byte(JSON), nil)
+}
+
 func TestPackagesInfoFromName(t *testing.T) {
 	tests := []testData{
 		{
 			packageName: "foo/test",
-			packages: []PackagesInfo{
+			body: []PackagesInfo{
 				PackagesInfo{
 					RangeStart: 0,
 					RangeEnd:   4,
@@ -88,7 +99,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			packages: []PackagesInfo{
+			body: []PackagesInfo{
 				PackagesInfo{
 					RangeStart: 0,
 					RangeEnd:   4,
@@ -129,7 +140,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			packages: []PackagesInfo{
+			body: []PackagesInfo{
 				PackagesInfo{
 					RangeStart: 0,
 					RangeEnd:   4,
@@ -192,7 +203,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			packages: []PackagesInfo{
+			body: []PackagesInfo{
 				PackagesInfo{
 					RangeStart:  0,
 					RangeEnd:    0,
@@ -207,7 +218,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			packages: []PackagesInfo{
+			body: []PackagesInfo{
 				PackagesInfo{
 					RangeStart:  0,
 					RangeEnd:    0,
@@ -220,11 +231,34 @@ func TestPackagesInfoFromName(t *testing.T) {
 			httpError:     nil,
 			expectedError: errors.New("Unexpected status code: 500"),
 		},
+		{
+			packageName: "foo/test",
+			body: []PackagesInfo{
+				PackagesInfo{
+					RangeStart:  0,
+					RangeEnd:    0,
+					TotalCount:  0,
+					PackageList: []PackageInfo{},
+				},
+			},
+			expected:      nil,
+			statusCode:    500,
+			httpError:     nil,
+			expectedError: errors.New("Unexpected status code: 500"),
+		},
+		{
+			packageName:   "foo/test",
+			body:          "corrupted json data",
+			expected:      nil,
+			statusCode:    200,
+			httpError:     nil,
+			expectedError: jsonError("corrupted json data"),
+		},
 	}
 
 	for _, test := range tests {
 		http := makeFakeHTTPClient(t, test)
-		testDepot := &depot{TEST_HAB_URL, http}
+		testDepot := &depot{testHabURL, http}
 
 		results, err := testDepot.PackageVersionsFromName(test.packageName)
 
