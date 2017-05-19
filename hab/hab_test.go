@@ -236,11 +236,11 @@ func TestPackagesInfoFromName(t *testing.T) {
 			if reflect.TypeOf(err) != reflect.TypeOf(test.expectedError) {
 				t.Fatalf("Expected error type: %v, actual %v", reflect.TypeOf(test.expectedError), reflect.TypeOf(err))
 			} else if err.Error() != test.expectedError.Error() {
-				t.Fatalf("Expected error message %v, actual %v", test.expectedError, err)
+				t.Errorf("Expected error message %v, actual %v", test.expectedError, err)
 			}
 		} else {
 			if !reflect.DeepEqual(results, test.expected) {
-				t.Errorf("Get versions %v, but expected %v", results, test.expected)
+				t.Errorf("Expected versions %v, actual %v", test.expected, results)
 			}
 		}
 	}

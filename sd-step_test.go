@@ -154,6 +154,13 @@ func TestGetPackageVersions(t *testing.T) {
 			depotError:        nil,
 			expectedError:     nil,
 		},
+		{
+			versionExpression: "1.2.0-beta",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.2.3-abc", "1.3.0", "2.0.0"},
+			expectedVersion:   "",
+			depotError:        nil,
+			expectedError:     errors.New("The specified version not found"),
+		},
 	}
 
 	for _, test := range tests {
@@ -166,7 +173,7 @@ func TestGetPackageVersions(t *testing.T) {
 
 		if test.expectedError != nil {
 			if reflect.TypeOf(err) != reflect.TypeOf(test.expectedError) {
-				t.Fatalf("Unknown error type: %v", reflect.TypeOf(err))
+				t.Fatalf("Expected error type %v, actual %v", reflect.TypeOf(test.expectedError), reflect.TypeOf(err))
 			} else if err.Error() != test.expectedError.Error() {
 				t.Errorf("Expected Error \"%s\", actual \"%s\"", test.expectedError.Error(), err.Error())
 			}
