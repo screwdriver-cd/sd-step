@@ -80,11 +80,11 @@ func (depo *depot) PackageVersionsFromName(pkgName string) ([]string, error) {
 
 		packages = append(packages, pkgsInfo.PackageList...)
 
-		if pkgsInfo.RangeEnd+1 >= pkgsInfo.TotalCount {
+		offset = pkgsInfo.RangeEnd + 1
+
+		if offset >= pkgsInfo.TotalCount {
 			break
 		}
-
-		offset = pkgsInfo.RangeEnd
 	}
 
 	var versions []string
