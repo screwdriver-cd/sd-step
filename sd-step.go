@@ -19,7 +19,7 @@ import (
 // VERSION gets set by the build script via the LDFLAGS
 var VERSION string
 
-// HAB_DEPOT_URL is base url for public depot of habitat
+// habDepotURL is base url for public depot of habitat
 const habDepotURL = "https://willem.habitat.sh/v1/depot"
 
 var habPath = "/opt/sd/bin/hab"
