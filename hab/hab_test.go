@@ -14,37 +14,43 @@ import (
 
 var testHabURL = "http://foo.com/v1/depot"
 
+type ResponseData interface{}
+
 type testData struct {
 	packageName   string
-	body          interface{}
+	responses     []ResponseData
 	expected      []string
 	statusCode    int
 	httpError     error
 	expectedError error
 }
 
-func makeFakeHTTPClient(t *testing.T, data testData) *http.Client {
-	count := 0
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var JSON string
+func makeJSONFromResponseData(t *testing.T, responseData ResponseData) string {
+	var JSON string
 
-		if pkgsData, ok := data.body.([]PackagesInfo); ok {
-			pkgsInfo := pkgsData[count]
-			count++
-			bytes, err := json.Marshal(pkgsInfo)
-			if err != nil {
-				t.Fatalf("Unable to Marshal JSON for PackagesInfo: %v", err)
-			}
-			JSON = string(bytes)
-		} else if strData, ok := data.body.(string); ok {
-			JSON = strData
-		} else {
-			t.Fatalf("The test data for a request body is strange data type: %v, it expected []PackagesInfo or string", reflect.TypeOf(data.body))
+	if pkgsData, ok := responseData.(PackagesInfo); ok {
+		bytes, err := json.Marshal(pkgsData)
+		if err != nil {
+			t.Fatalf("Unable to Marshal JSON for PackagesInfo: %v", err)
 		}
+		JSON = string(bytes)
+	} else if strData, ok := responseData.(string); ok {
+		JSON = strData
+	} else {
+		t.Fatalf("The test data for a request body is strange data type: %v, it expected PackagesInfo or string", reflect.TypeOf(responseData))
+	}
 
+	return JSON
+}
+
+func makeFakeHTTPClient(t *testing.T, data testData) *http.Client {
+	requestCount := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		resposeJSON := makeJSONFromResponseData(t, data.responses[requestCount])
+		requestCount++
 		w.WriteHeader(data.statusCode)
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, JSON)
+		fmt.Fprintln(w, resposeJSON)
 	}))
 
 	transport := &http.Transport{
@@ -68,7 +74,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 	tests := []testData{
 		{
 			packageName: "foo/test",
-			body: []PackagesInfo{
+			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
 					RangeEnd:   4,
@@ -99,7 +105,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			body: []PackagesInfo{
+			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
 					RangeEnd:   4,
@@ -140,7 +146,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			body: []PackagesInfo{
+			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
 					RangeEnd:   4,
@@ -203,7 +209,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			body: []PackagesInfo{
+			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart:  0,
 					RangeEnd:    0,
@@ -218,7 +224,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			body: []PackagesInfo{
+			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart:  0,
 					RangeEnd:    0,
@@ -233,7 +239,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
-			body: []PackagesInfo{
+			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart:  0,
 					RangeEnd:    0,
@@ -247,8 +253,10 @@ func TestPackagesInfoFromName(t *testing.T) {
 			expectedError: errors.New("Unexpected status code: 500"),
 		},
 		{
-			packageName:   "foo/test",
-			body:          "corrupted json data",
+			packageName: "foo/test",
+			responses: []ResponseData{
+				"corrupted json data",
+			},
 			expected:      nil,
 			statusCode:    200,
 			httpError:     nil,
