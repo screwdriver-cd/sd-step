@@ -90,7 +90,7 @@ func (depo *depot) PackageVersionsFromName(pkgName string) ([]string, error) {
 	var versions []string
 	foundVersions := map[string]bool{}
 	for _, pkg := range packages {
-		if _, ok := foundVersions[pkg.Version]; ok {
+		if foundVersions[pkg.Version] {
 			continue
 		}
 		versions = append(versions, pkg.Version)
