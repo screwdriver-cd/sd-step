@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -88,4 +90,97 @@ func TestHelperProcess(t *testing.T) {
 		}
 	}
 	os.Exit(255)
+}
+
+type depotMock struct {
+	versions []string
+	err      error
+}
+
+func (depo *depotMock) PackageVersionsFromName(pkgName string) ([]string, error) {
+	if depo.err != nil {
+		return nil, depo.err
+	}
+	return depo.versions, nil
+}
+
+func TestGetPackageVersions(t *testing.T) {
+	tests := []struct {
+		versionExpression string
+		foundVersions     []string
+		expectedVersion   string
+		depotError        error
+		expectedError     error
+	}{
+		{
+			versionExpression: "1.0.0",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.0.0", "2.0.0"},
+			expectedVersion:   "1.0.0",
+			depotError:        nil,
+			expectedError:     nil,
+		},
+		{
+			versionExpression: "^1.2.0",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.3.0", "2.0.0"},
+			expectedVersion:   "1.3.0",
+			depotError:        nil,
+			expectedError:     nil,
+		},
+		{
+			versionExpression: "~1.2.0",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.3.0", "2.0.0"},
+			expectedVersion:   "1.2.2",
+			depotError:        nil,
+			expectedError:     nil,
+		},
+		{
+			versionExpression: "",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.3.0", "2.0.0"},
+			expectedVersion:   "",
+			depotError:        nil,
+			expectedError:     nil,
+		},
+		{
+			versionExpression: "1.0.0",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.3.0", "2.0.0"},
+			expectedVersion:   "",
+			depotError:        errors.New("depot error"),
+			expectedError:     errors.New("Failed to fetch package versions: depot error"),
+		},
+		{
+			versionExpression: "~1.2.0",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.2.3-abc", "1.3.0", "2.0.0"},
+			expectedVersion:   "1.2.2",
+			depotError:        nil,
+			expectedError:     nil,
+		},
+		{
+			versionExpression: "1.2.0-beta",
+			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.2.3-abc", "1.3.0", "2.0.0"},
+			expectedVersion:   "",
+			depotError:        nil,
+			expectedError:     errors.New("The specified version not found"),
+		},
+	}
+
+	for _, test := range tests {
+		depot := &depotMock{test.foundVersions, test.depotError}
+		version, err := getPackageVersion(depot, "foo/test", test.versionExpression)
+
+		if test.expectedError == nil && err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if test.expectedError != nil {
+			if reflect.TypeOf(err) != reflect.TypeOf(test.expectedError) {
+				t.Fatalf("Expected error type %v, actual %v", reflect.TypeOf(test.expectedError), reflect.TypeOf(err))
+			} else if err.Error() != test.expectedError.Error() {
+				t.Errorf("Expected Error \"%s\", actual \"%s\"", test.expectedError.Error(), err.Error())
+			}
+		} else {
+			if version != test.expectedVersion {
+				t.Errorf("Expected \"%s\", actual \"%s\"", test.expectedVersion, version)
+			}
+		}
+	}
 }
