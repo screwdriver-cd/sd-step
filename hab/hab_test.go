@@ -211,6 +211,46 @@ func TestPackagesInfoFromName(t *testing.T) {
 			packageName: "foo/test",
 			responses: []ResponseData{
 				PackagesInfo{
+					RangeStart: 0,
+					RangeEnd:   4,
+					TotalCount: 3,
+					PackageList: []PackageInfo{
+						{
+							Origin:  "foo",
+							Name:    "test",
+							Version: "0.0.1",
+							Release: "20170524100001",
+						},
+						{
+							Origin:  "foo",
+							Name:    "test",
+							Version: "0.0.1",
+							Release: "20170524100002",
+						},
+						{
+							Origin:  "foo",
+							Name:    "test",
+							Version: "0.0.2",
+							Release: "20170524100003",
+						},
+						{
+							Origin:  "foo",
+							Name:    "test",
+							Version: "0.1.0",
+							Release: "20170524100004",
+						},
+					},
+				},
+			},
+			expected:      []string{"0.0.1", "0.0.2", "0.1.0"},
+			statusCode:    200,
+			httpError:     nil,
+			expectedError: nil,
+		},
+		{
+			packageName: "foo/test",
+			responses: []ResponseData{
+				PackagesInfo{
 					RangeStart:  0,
 					RangeEnd:    0,
 					TotalCount:  0,
