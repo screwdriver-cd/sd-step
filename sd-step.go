@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/user"
 	"regexp"
 	"runtime/debug"
 	"sort"
@@ -77,6 +78,11 @@ func execHab(pkgName string, pkgVersion string, command []string, output io.Writ
 	}
 
 	installCmd := []string{habPath, "pkg", "install", pkg, ">/dev/null"}
+	if u, userErr := user.Current(); userErr != nil || u.Uid != "0" {
+		// execute sudo command if not root user
+		installCmd = append([]string{"sudo"}, installCmd...)
+	}
+
 	unwrappedInstallCommand := strings.Join(installCmd, " ")
 	installErr := runCommand(unwrappedInstallCommand, output)
 	if installErr != nil {
