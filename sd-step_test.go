@@ -26,7 +26,7 @@ func TestRunCommand(t *testing.T) {
 	defer func() { execCommand = exec.Command }()
 
 	stdout := new(bytes.Buffer)
-	err := runCommand("hab pkg install foo/bar", stdout)
+	err := runCommand("sudo hab pkg install foo/bar", stdout)
 	expected := "run hab pkg install\n"
 	if err != nil {
 		t.Errorf("runCommand error = %q, should be nil", err)
@@ -77,15 +77,16 @@ func TestHelperProcess(t *testing.T) {
 			break
 		}
 	}
-	if len(args) >= 4 && args[1] == "pkg" {
-		switch args[2] {
-		case "install":
+
+	if len(args) >= 4 {
+		if args[0] == "sudo" && args[3] == "install" ||
+			args[0] != "sudo" && args[2] == "install" {
 			fmt.Println("run hab pkg install")
 			return
-		case "exec":
+		} else if args[2] == "exec" {
 			fmt.Println("run hab pkg exec")
 			return
-		default:
+		} else {
 			os.Exit(255)
 		}
 	}
