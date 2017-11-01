@@ -13,7 +13,7 @@ type PackagesInfo struct {
 	RangeStart  int           `json:"range_start"`
 	RangeEnd    int           `json:"range_end"`
 	TotalCount  int           `json:"total_count"`
-	PackageList []PackageInfo `json:"package_list"`
+	PackageList []PackageInfo `json:"data"`
 }
 
 // PackageInfo is package info in pkgs response
