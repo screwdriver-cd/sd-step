@@ -18,15 +18,16 @@ type PackagesInfo struct {
 
 // PackageInfo is package info in pkgs response
 type PackageInfo struct {
-	Origin  string `json:"origin"`
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	Release string `json:"release"`
+	Origin   string   `json:"origin"`
+	Name     string   `json:"name"`
+	Version  string   `json:"version"`
+	Release  string   `json:"release"`
+	Channels []string `json:"channels"`
 }
 
 // Depot for hab
 type Depot interface {
-	PackageVersionsFromName(pkgName string) ([]string, error)
+	PackageVersionsFromName(pkgName string, habChannel string) ([]string, error)
 }
 
 type depot struct {
@@ -67,7 +68,7 @@ func (depo *depot) packagesInfo(pkgName string, from int) (PackagesInfo, error) 
 }
 
 // PackageVersionsFromName fetch all versions from depot
-func (depo *depot) PackageVersionsFromName(pkgName string) ([]string, error) {
+func (depo *depot) PackageVersionsFromName(pkgName string, habChannel string) ([]string, error) {
 	var packages []PackageInfo
 
 	offset := 0
@@ -93,8 +94,13 @@ func (depo *depot) PackageVersionsFromName(pkgName string) ([]string, error) {
 		if foundVersions[pkg.Version] {
 			continue
 		}
-		versions = append(versions, pkg.Version)
-		foundVersions[pkg.Version] = true
+		for _, channel := range pkg.Channels {
+			if channel == habChannel {
+				versions = append(versions, pkg.Version)
+				foundVersions[pkg.Version] = true
+				break
+			}
+		}
 	}
 
 	return versions, nil

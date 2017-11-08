@@ -18,6 +18,7 @@ type ResponseData interface{}
 
 type testData struct {
 	packageName   string
+	channelName   string
 	responses     []ResponseData
 	expected      []string
 	statusCode    int
@@ -74,6 +75,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 	tests := []testData{
 		{
 			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
@@ -81,19 +83,22 @@ func TestPackagesInfoFromName(t *testing.T) {
 					TotalCount: 3,
 					PackageList: []PackageInfo{
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.1",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.2",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.2",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.1.0",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.0",
+							Channels: []string{"stable"},
 						},
 					},
 				},
@@ -105,6 +110,42 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
+			channelName: "unstable",
+			responses: []ResponseData{
+				PackagesInfo{
+					RangeStart: 0,
+					RangeEnd:   4,
+					TotalCount: 3,
+					PackageList: []PackageInfo{
+						{
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Channels: []string{"stable"},
+						},
+						{
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.2",
+							Channels: []string{"stable"},
+						},
+						{
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.0",
+							Channels: []string{"stable"},
+						},
+					},
+				},
+			},
+			expected:      nil,
+			statusCode:    200,
+			httpError:     nil,
+			expectedError: nil,
+		},
+		{
+			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
@@ -112,29 +153,34 @@ func TestPackagesInfoFromName(t *testing.T) {
 					TotalCount: 5,
 					PackageList: []PackageInfo{
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.1",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.2",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.2",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.1.0",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.0",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.1.1",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.1",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "1.0.0",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "1.0.0",
+							Channels: []string{"stable"},
 						},
 					},
 				},
@@ -146,6 +192,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
@@ -153,29 +200,34 @@ func TestPackagesInfoFromName(t *testing.T) {
 					TotalCount: 8,
 					PackageList: []PackageInfo{
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.1",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.2",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.2",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.1.0",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.0",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.1.1",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.1",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "1.0.0",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "1.0.0",
+							Channels: []string{"stable"},
 						},
 					},
 				},
@@ -185,19 +237,22 @@ func TestPackagesInfoFromName(t *testing.T) {
 					TotalCount: 8,
 					PackageList: []PackageInfo{
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "1.0.1",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "1.0.1",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "1.1.0",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "1.1.0",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "2.0.0",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "2.0.0",
+							Channels: []string{"stable"},
 						},
 					},
 				},
@@ -209,6 +264,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
@@ -216,28 +272,32 @@ func TestPackagesInfoFromName(t *testing.T) {
 					TotalCount: 3,
 					PackageList: []PackageInfo{
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.1",
-							Release: "20170524100001",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Release:  "20170524100001",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.1",
-							Release: "20170524100002",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Release:  "20170524100002",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.0.2",
-							Release: "20170524100003",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.2",
+							Release:  "20170524100003",
+							Channels: []string{"stable"},
 						},
 						{
-							Origin:  "foo",
-							Name:    "test",
-							Version: "0.1.0",
-							Release: "20170524100004",
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.0",
+							Release:  "20170524100004",
+							Channels: []string{"stable"},
 						},
 					},
 				},
@@ -249,6 +309,52 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
+			channelName: "stable",
+			responses: []ResponseData{
+				PackagesInfo{
+					RangeStart: 0,
+					RangeEnd:   4,
+					TotalCount: 3,
+					PackageList: []PackageInfo{
+						{
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Release:  "20170524100001",
+							Channels: []string{"unstable"},
+						},
+						{
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.1",
+							Release:  "20170524100002",
+							Channels: []string{"stable"},
+						},
+						{
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.0.2",
+							Release:  "20170524100003",
+							Channels: []string{"unstable"},
+						},
+						{
+							Origin:   "foo",
+							Name:     "test",
+							Version:  "0.1.0",
+							Release:  "20170524100004",
+							Channels: []string{"stable"},
+						},
+					},
+				},
+			},
+			expected:      []string{"0.0.1", "0.1.0"},
+			statusCode:    200,
+			httpError:     nil,
+			expectedError: nil,
+		},
+		{
+			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart:  0,
@@ -264,6 +370,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart:  0,
@@ -279,6 +386,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart:  0,
@@ -294,6 +402,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		},
 		{
 			packageName: "foo/test",
+			channelName: "stable",
 			responses: []ResponseData{
 				"corrupted json data",
 			},
@@ -308,7 +417,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 		http := makeFakeHTTPClient(t, test)
 		testDepot := &depot{testHabURL, http}
 
-		results, err := testDepot.PackageVersionsFromName(test.packageName)
+		results, err := testDepot.PackageVersionsFromName(test.packageName, test.channelName)
 
 		if test.expectedError == nil && err != nil {
 			t.Fatalf("Unexpected error: %v", err)

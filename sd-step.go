@@ -71,13 +71,13 @@ func runCommand(command string, output io.Writer) error {
 }
 
 // execHab installs habitat package and executes habitat command
-func execHab(pkgName string, pkgVersion string, command []string, output io.Writer) error {
+func execHab(pkgName string, pkgVersion string, habChannel string, command []string, output io.Writer) error {
 	pkg, verErr := translatePkgName(pkgName, pkgVersion)
 	if verErr != nil {
 		return verErr
 	}
 
-	installCmd := []string{habPath, "pkg", "install", pkg, ">/dev/null"}
+	installCmd := []string{habPath, "pkg", "install", pkg, "-c", habChannel, ">/dev/null"}
 	if u, userErr := user.Current(); userErr != nil || u.Uid != "0" {
 		// execute sudo command if not root user
 		installCmd = append([]string{"sudo"}, installCmd...)
@@ -100,14 +100,14 @@ func execHab(pkgName string, pkgVersion string, command []string, output io.Writ
 }
 
 // getPackageVersion returns the appropriate package version which matched the `pkgVerExp` expression.
-func getPackageVersion(depot hab.Depot, pkgName, pkgVerExp string) (string, error) {
+func getPackageVersion(depot hab.Depot, pkgName, pkgVerExp string, habChannel string) (string, error) {
 	versionConst, err := semver.NewConstraint(pkgVerExp)
 	// if pkgVerExp is invalid for semver expression, it returns pkgVerExp as it is
 	if err != nil {
 		return pkgVerExp, nil
 	}
 
-	foundVersions, err := depot.PackageVersionsFromName(pkgName)
+	foundVersions, err := depot.PackageVersionsFromName(pkgName, habChannel)
 	if err != nil {
 		return "", fmt.Errorf("Failed to fetch package versions: %v", err)
 	}
@@ -142,6 +142,7 @@ func main() {
 	defer finalRecover()
 
 	var pkgVerExp string
+	var habChannel string
 
 	app := cli.NewApp()
 	app.Name = "sd-step"
@@ -161,6 +162,12 @@ func main() {
 			Value:       "",
 			Destination: &pkgVerExp,
 		},
+		cli.StringFlag{
+			Name:        "hab-channel",
+			Usage:       "Install from the specified release channel",
+			Value:       "stable",
+			Destination: &habChannel,
+		},
 	}
 
 	app.Commands = []cli.Command{
@@ -175,13 +182,13 @@ func main() {
 				pkgName := c.Args().Get(0)
 
 				depot := hab.New(habDepotURL)
-				pkgVersion, err := getPackageVersion(depot, pkgName, pkgVerExp)
+				pkgVersion, err := getPackageVersion(depot, pkgName, pkgVerExp, habChannel)
 
 				if err != nil {
 					failureExit(fmt.Errorf("Failed to get package version: %v", err))
 				}
 
-				err = execHab(pkgName, pkgVersion, c.Args().Tail(), os.Stdout)
+				err = execHab(pkgName, pkgVersion, habChannel, c.Args().Tail(), os.Stdout)
 				if err != nil {
 					failureExit(err)
 				}

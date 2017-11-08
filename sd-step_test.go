@@ -50,7 +50,7 @@ func TestExecHab(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	execCommand = fakeExecCommand
 	defer func() { execCommand = exec.Command }()
-	err := execHab("foo/bar", "2.2.2", []string{"foo", "bar", "foobar"}, stdout)
+	err := execHab("foo/bar", "2.2.2", "stable", []string{"foo", "bar", "foobar"}, stdout)
 	if err != nil {
 		t.Errorf("execHab error = %q, should be nil", err)
 	}
@@ -98,7 +98,7 @@ type depotMock struct {
 	err      error
 }
 
-func (depo *depotMock) PackageVersionsFromName(pkgName string) ([]string, error) {
+func (depo *depotMock) PackageVersionsFromName(pkgName string, habChannel string) ([]string, error) {
 	if depo.err != nil {
 		return nil, depo.err
 	}
@@ -166,7 +166,7 @@ func TestGetPackageVersions(t *testing.T) {
 
 	for _, test := range tests {
 		depot := &depotMock{test.foundVersions, test.depotError}
-		version, err := getPackageVersion(depot, "foo/test", test.versionExpression)
+		version, err := getPackageVersion(depot, "foo/test", test.versionExpression, "stable")
 
 		if test.expectedError == nil && err != nil {
 			t.Fatalf("Unexpected error: %v", err)
