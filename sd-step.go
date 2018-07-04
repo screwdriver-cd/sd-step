@@ -77,16 +77,21 @@ func execHab(pkgName string, pkgVersion string, habChannel string, command []str
 		return verErr
 	}
 
-	installCmd := []string{habPath, "pkg", "install", pkg, "-c", habChannel, ">/dev/null"}
-	if u, userErr := user.Current(); userErr != nil || u.Uid != "0" {
-		// execute sudo command if not root user
-		installCmd = append([]string{"sudo"}, installCmd...)
-	}
+	checkCmd := habPath + " pkg path " + pkg + " >/dev/null 2>&1"
+	installed := runCommand(checkCmd, output)
 
-	unwrappedInstallCommand := strings.Join(installCmd, " ")
-	installErr := runCommand(unwrappedInstallCommand, output)
-	if installErr != nil {
-		return installErr
+	if installed != nil {
+		installCmd := []string{habPath, "pkg", "install", pkg, "-c", habChannel, ">/dev/null"}
+		if u, userErr := user.Current(); userErr != nil || u.Uid != "0" {
+			// execute sudo command if not root user
+			installCmd = append([]string{"sudo"}, installCmd...)
+		}
+
+		unwrappedInstallCommand := strings.Join(installCmd, " ")
+		installErr := runCommand(unwrappedInstallCommand, output)
+		if installErr != nil {
+			return installErr
+		}
 	}
 
 	execCmd := []string{habPath, "pkg", "exec", pkg}
