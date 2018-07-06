@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -77,16 +78,22 @@ func execHab(pkgName string, pkgVersion string, habChannel string, command []str
 		return verErr
 	}
 
-	installCmd := []string{habPath, "pkg", "install", pkg, "-c", habChannel, ">/dev/null"}
-	if u, userErr := user.Current(); userErr != nil || u.Uid != "0" {
-		// execute sudo command if not root user
-		installCmd = append([]string{"sudo"}, installCmd...)
-	}
+	// Check if the desired version of the package exists
+	checkCmd := habPath + " pkg path " + pkg + " >/dev/null 2>&1"
+	checkCmdResult := runCommand(checkCmd, output)
 
-	unwrappedInstallCommand := strings.Join(installCmd, " ")
-	installErr := runCommand(unwrappedInstallCommand, output)
-	if installErr != nil {
-		return installErr
+	if checkCmdResult != nil {
+		installCmd := []string{habPath, "pkg", "install", pkg, "-c", habChannel, ">/dev/null"}
+		if u, userErr := user.Current(); userErr != nil || u.Uid != "0" {
+			// execute sudo command if not root user
+			installCmd = append([]string{"sudo"}, installCmd...)
+		}
+
+		unwrappedInstallCommand := strings.Join(installCmd, " ")
+		installErr := runCommand(unwrappedInstallCommand, output)
+		if installErr != nil {
+			return installErr
+		}
 	}
 
 	execCmd := []string{habPath, "pkg", "exec", pkg}
@@ -109,7 +116,15 @@ func getPackageVersion(depot hab.Depot, pkgName, pkgVerExp string, habChannel st
 
 	foundVersions, err := depot.PackageVersionsFromName(pkgName, habChannel)
 	if err != nil {
-		return "", fmt.Errorf("Failed to fetch package versions: %v", err)
+		fmt.Fprintf(os.Stderr, "ERROR: Unable to access to Habitat depot API. %v\n"+
+			"Trying to fetch versions from installed packages...\n", err)
+		dirs, err := ioutil.ReadDir("/hab/pkgs/" + pkgName)
+		if err != nil {
+			return "", errors.New("The specified version not found")
+		}
+		for _, dir := range dirs {
+			foundVersions = append(foundVersions, dir.Name())
+		}
 	}
 
 	var versions []*semver.Version
@@ -143,6 +158,8 @@ func main() {
 
 	var pkgVerExp string
 	var habChannel string
+	var pkgVersion string
+	var err error
 
 	app := cli.NewApp()
 	app.Name = "sd-step"
@@ -182,10 +199,13 @@ func main() {
 				pkgName := c.Args().Get(0)
 
 				depot := hab.New(habDepotURL)
-				pkgVersion, err := getPackageVersion(depot, pkgName, pkgVerExp, habChannel)
 
-				if err != nil {
-					failureExit(fmt.Errorf("Failed to get package version: %v", err))
+				if pkgVerExp != "" {
+					pkgVersion, err = getPackageVersion(depot, pkgName, pkgVerExp, habChannel)
+
+					if err != nil {
+						failureExit(fmt.Errorf("Failed to get package version: %v", err))
+					}
 				}
 
 				err = execHab(pkgName, pkgVersion, habChannel, c.Args().Tail(), os.Stdout)
