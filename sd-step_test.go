@@ -146,7 +146,7 @@ func TestGetPackageVersions(t *testing.T) {
 			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.3.0", "2.0.0"},
 			expectedVersion:   "",
 			depotError:        errors.New("depot error"),
-			expectedError:     errors.New("Failed to fetch package versions: depot error"),
+			expectedError:     errors.New("The specified version not found"),
 		},
 		{
 			versionExpression: "~1.2.0",
