@@ -71,6 +71,22 @@ func runCommand(command string, output io.Writer) error {
 	return cmd.Run()
 }
 
+// Check if package is installed
+func isPackageInstalled(pkgName string, pkgVersion string) bool {
+	var output io.Writer
+
+	pkg, err := translatePkgName(pkgName, pkgVersion)
+	if err != nil {
+		return false
+	}
+
+	// hab pkg path command exits with zero if pkg exists
+	checkCmd := habPath + " pkg path " + pkg + " >/dev/null 2>&1"
+	checkCmdResult := runCommand(checkCmd, output)
+
+	return checkCmdResult == nil
+}
+
 // execHab installs habitat package and executes habitat command
 func execHab(pkgName string, pkgVersion string, habChannel string, command []string, output io.Writer) error {
 	pkg, verErr := translatePkgName(pkgName, pkgVersion)
@@ -78,11 +94,7 @@ func execHab(pkgName string, pkgVersion string, habChannel string, command []str
 		return verErr
 	}
 
-	// Check if the desired version of the package exists
-	checkCmd := habPath + " pkg path " + pkg + " >/dev/null 2>&1"
-	checkCmdResult := runCommand(checkCmd, output)
-
-	if checkCmdResult != nil {
+	if !isPackageInstalled(pkgName, pkgVersion) {
 		installCmd := []string{habPath, "pkg", "install", pkg, "-c", habChannel, ">/dev/null"}
 		if u, userErr := user.Current(); userErr != nil || u.Uid != "0" {
 			// execute sudo command if not root user
@@ -200,7 +212,10 @@ func main() {
 
 				depot := hab.New(habDepotURL)
 
-				if pkgVerExp != "" {
+				// Use verExp as an exact package version if it is already installed
+				if isPackageInstalled(pkgName, pkgVerExp) {
+					pkgVersion = pkgVerExp
+				} else if pkgVerExp != "" {
 					pkgVersion, err = getPackageVersion(depot, pkgName, pkgVerExp, habChannel)
 
 					if err != nil {
