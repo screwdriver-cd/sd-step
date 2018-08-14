@@ -53,7 +53,7 @@ func (depo *depot) packagesInfo(pkgName string, from int) (PackagesInfo, error) 
 
 	if res.StatusCode == 404 {
 		return PackagesInfo{}, errors.New("Package not found")
-	} else if res.StatusCode != 200 {
+	} else if res.StatusCode/100 != 2 {
 		return PackagesInfo{}, fmt.Errorf("Unexpected status code: %d", res.StatusCode)
 	}
 
