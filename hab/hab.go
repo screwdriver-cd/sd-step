@@ -37,7 +37,7 @@ type depot struct {
 
 // New returns a new depot object
 func New(baseURL string) Depot {
-	return &depot{baseURL, &http.Client{Timeout: 10 * time.Second}}
+	return &depot{baseURL, &http.Client{Timeout: 20 * time.Second}}
 }
 
 // packagesInfo fetch packages info from depot
