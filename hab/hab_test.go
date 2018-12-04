@@ -79,7 +79,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
-					RangeEnd:   4,
+					RangeEnd:   2,
 					TotalCount: 3,
 					PackageList: []PackageInfo{
 						{
@@ -102,6 +102,12 @@ func TestPackagesInfoFromName(t *testing.T) {
 						},
 					},
 				},
+				PackagesInfo{
+					RangeStart: 3,
+					RangeEnd:   0,
+					TotalCount: 0,
+					PackageList: []PackageInfo{},
+        },
 			},
 			expected:      []string{"0.0.1", "0.0.2", "0.1.0"},
 			statusCode:    200,
@@ -114,7 +120,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
-					RangeEnd:   4,
+					RangeEnd:   2,
 					TotalCount: 3,
 					PackageList: []PackageInfo{
 						{
@@ -137,6 +143,12 @@ func TestPackagesInfoFromName(t *testing.T) {
 						},
 					},
 				},
+				PackagesInfo{
+					RangeStart: 3,
+					RangeEnd:   0,
+					TotalCount: 0,
+					PackageList: []PackageInfo{},
+        },
 			},
 			expected:      nil,
 			statusCode:    200,
@@ -184,6 +196,12 @@ func TestPackagesInfoFromName(t *testing.T) {
 						},
 					},
 				},
+				PackagesInfo{
+					RangeStart: 5,
+					RangeEnd:   0,
+					TotalCount: 0,
+					PackageList: []PackageInfo{},
+        },
 			},
 			expected:      []string{"0.0.1", "0.0.2", "0.1.0", "0.1.1", "1.0.0"},
 			statusCode:    206,
@@ -197,7 +215,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 				PackagesInfo{
 					RangeStart: 0,
 					RangeEnd:   4,
-					TotalCount: 8,
+					TotalCount: 5,
 					PackageList: []PackageInfo{
 						{
 							Origin:   "foo",
@@ -233,8 +251,8 @@ func TestPackagesInfoFromName(t *testing.T) {
 				},
 				PackagesInfo{
 					RangeStart: 5,
-					RangeEnd:   9,
-					TotalCount: 8,
+					RangeEnd:   7,
+					TotalCount: 3,
 					PackageList: []PackageInfo{
 						{
 							Origin:   "foo",
@@ -256,6 +274,12 @@ func TestPackagesInfoFromName(t *testing.T) {
 						},
 					},
 				},
+				PackagesInfo{
+					RangeStart: 8,
+					RangeEnd:   0,
+					TotalCount: 0,
+					PackageList: []PackageInfo{},
+        },
 			},
 			expected:      []string{"0.0.1", "0.0.2", "0.1.0", "0.1.1", "1.0.0", "1.0.1", "1.1.0", "2.0.0"},
 			statusCode:    206,
@@ -268,8 +292,8 @@ func TestPackagesInfoFromName(t *testing.T) {
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
-					RangeEnd:   4,
-					TotalCount: 3,
+					RangeEnd:   3,
+					TotalCount: 4,
 					PackageList: []PackageInfo{
 						{
 							Origin:   "foo",
@@ -301,6 +325,12 @@ func TestPackagesInfoFromName(t *testing.T) {
 						},
 					},
 				},
+				PackagesInfo{
+					RangeStart: 4,
+					RangeEnd:   0,
+					TotalCount: 0,
+					PackageList: []PackageInfo{},
+        },
 			},
 			expected:      []string{"0.0.1", "0.0.2", "0.1.0"},
 			statusCode:    200,
@@ -313,8 +343,8 @@ func TestPackagesInfoFromName(t *testing.T) {
 			responses: []ResponseData{
 				PackagesInfo{
 					RangeStart: 0,
-					RangeEnd:   4,
-					TotalCount: 3,
+					RangeEnd:   3,
+					TotalCount: 4,
 					PackageList: []PackageInfo{
 						{
 							Origin:   "foo",
@@ -346,6 +376,12 @@ func TestPackagesInfoFromName(t *testing.T) {
 						},
 					},
 				},
+				PackagesInfo{
+					RangeStart: 4,
+					RangeEnd:   0,
+					TotalCount: 0,
+					PackageList: []PackageInfo{},
+        },
 			},
 			expected:      []string{"0.0.1", "0.1.0"},
 			statusCode:    200,

@@ -79,13 +79,13 @@ func (depo *depot) PackageVersionsFromName(pkgName string, habChannel string) ([
 			return nil, err
 		}
 
+		if pkgsInfo.TotalCount <= 0 {
+			break
+		}
+
 		packages = append(packages, pkgsInfo.PackageList...)
 
 		offset = pkgsInfo.RangeEnd + 1
-
-		if offset >= pkgsInfo.TotalCount {
-			break
-		}
 	}
 
 	var versions []string
