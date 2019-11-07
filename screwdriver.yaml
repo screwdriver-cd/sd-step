@@ -7,18 +7,17 @@ jobs:
     main:
         requires: [~commit, ~pr]
         steps:
-            - modverify: go mod verify
+            - modverify: go version; go mod verify
             - vet: go vet ./...
-            - gofmt: "find . -name '*.go' | xargs gofmt -s -w"
-            - test: go test ./...
+            - gofmt: gofmt -l .
             - build: go install -v ./...
+            - test: go test -v ./...
 
     deploy:
         requires: main
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
-            - get: go install -v ./...
-            - gofmt: "find . -name '*.go' | xargs gofmt -s -w"
+            - build: go install -v ./...
             - tag: ./ci/git-tag.sh
             - release: |
                 curl -sL https://git.io/goreleaser | bash

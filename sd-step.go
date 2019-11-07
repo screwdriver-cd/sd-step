@@ -10,7 +10,7 @@ import (
 	"os/user"
 	"regexp"
 	"runtime/debug"
-	"sort"
+ 	  "sort"
 	"strings"
 
 	"github.com/Masterminds/semver"
