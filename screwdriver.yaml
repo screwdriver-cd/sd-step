@@ -8,8 +8,17 @@ jobs:
         requires: [~commit, ~pr]
         steps:
             - modverify: go version; go mod verify
+            - gofmt: |
+                gofmtOutput=$(gofmt -l .)
+                if [ -z "${gofmtOutput}" ]; then
+                    echo "OK"
+                else
+                    echo "gofmt violations in the following file(s):"
+                    echo "${gofmtOutput}\n"
+                    gofmt -d .
+                    exit 1
+                fi
             - vet: go vet ./...
-            - gofmt: gofmt -l .
             - build: go install -v ./...
             - test: go test -v ./...
 
