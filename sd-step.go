@@ -18,10 +18,10 @@ import (
 	"github.com/urfave/cli"
 )
 
-// VERSION gets set by the build script via the LDFLAGS
+// VERSION gets set by the build script via the LDFLAGS.
 var VERSION string
 
-// habDepotURL is base url for public depot of habitat
+// habDepotURL is base url for public depot of habitat.
 const habDepotURL = "https://willem.habitat.sh/v1/depot"
 
 var habPath = "/opt/sd/bin/hab"
@@ -33,7 +33,7 @@ func successExit() {
 	os.Exit(0)
 }
 
-// failureExit exits process with 1
+// failureExit exits process with 1.
 func failureExit(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
@@ -52,18 +52,18 @@ func finalRecover() {
 	successExit()
 }
 
-// translatePkgName translates the pkgName if pkgVersion is specified
+// translatePkgName translates the pkgName if pkgVersion is specified.
 func translatePkgName(pkgName string, pkgVersion string) (string, error) {
 	if pkgVersion == "" {
 		return pkgName, nil
-	} else if valid := versionValidator.MatchString(pkgVersion); valid == true {
-		return pkgName + "/" + pkgVersion, nil
-	} else {
-		return "", fmt.Errorf("%v is invalid version", pkgVersion)
 	}
+	if valid := versionValidator.MatchString(pkgVersion); valid {
+		return pkgName + "/" + pkgVersion, nil
+	}
+	return "", fmt.Errorf("%v is invalid version", pkgVersion)
 }
 
-// runCommand runs command
+// runCommand runs command.
 func runCommand(command string, output io.Writer) error {
 	cmd := execCommand("sh", "-c", command)
 	cmd.Stdout = output
@@ -71,7 +71,7 @@ func runCommand(command string, output io.Writer) error {
 	return cmd.Run()
 }
 
-// Check if package is installed
+// isPackageInstalled checks if the package is installed.
 func isPackageInstalled(pkgName string, pkgVersion string) bool {
 	var output io.Writer
 
@@ -87,7 +87,7 @@ func isPackageInstalled(pkgName string, pkgVersion string) bool {
 	return checkCmdResult == nil
 }
 
-// execHab installs habitat package and executes habitat command
+// execHab installs habitat package and executes habitat command.
 func execHab(pkgName string, pkgVersion string, habChannel string, command []string, output io.Writer) error {
 	pkg, verErr := translatePkgName(pkgName, pkgVersion)
 	if verErr != nil {
@@ -132,7 +132,7 @@ func getPackageVersion(depot hab.Depot, pkgName, pkgVerExp string, habChannel st
 			"Trying to fetch versions from installed packages...\n", err)
 		dirs, err := ioutil.ReadDir("/hab/pkgs/" + pkgName)
 		if err != nil {
-			return "", errors.New("The specified version not found")
+			return "", errors.New("the specified version not found")
 		}
 		for _, dir := range dirs {
 			foundVersions = append(foundVersions, dir.Name())
@@ -157,7 +157,7 @@ func getPackageVersion(depot hab.Depot, pkgName, pkgVerExp string, habChannel st
 	}
 
 	if len(versions) == 0 {
-		return "", errors.New("The specified version not found")
+		return "", errors.New("the specified version not found")
 	}
 
 	sort.Sort(sort.Reverse(semver.Collection(versions)))
@@ -219,7 +219,7 @@ func main() {
 					pkgVersion, err = getPackageVersion(depot, pkgName, pkgVerExp, habChannel)
 
 					if err != nil {
-						failureExit(fmt.Errorf("Failed to get package version: %v", err))
+						failureExit(fmt.Errorf("failed to get package version: %v", err))
 					}
 				}
 

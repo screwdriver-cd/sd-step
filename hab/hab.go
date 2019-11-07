@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// PackagesInfo is response from depotj
+// PackagesInfo is response from depot.
 type PackagesInfo struct {
 	RangeStart  int           `json:"range_start"`
 	RangeEnd    int           `json:"range_end"`
@@ -16,7 +16,7 @@ type PackagesInfo struct {
 	PackageList []PackageInfo `json:"data"`
 }
 
-// PackageInfo is package info in pkgs response
+// PackageInfo is package info in pkgs response.
 type PackageInfo struct {
 	Origin   string   `json:"origin"`
 	Name     string   `json:"name"`
@@ -25,7 +25,7 @@ type PackageInfo struct {
 	Channels []string `json:"channels"`
 }
 
-// Depot for hab
+// Depot for hab.
 type Depot interface {
 	PackageVersionsFromName(pkgName string, habChannel string) ([]string, error)
 }
@@ -35,7 +35,7 @@ type depot struct {
 	client  *http.Client
 }
 
-// New returns a new depot object
+// New returns a new depot object.
 func New(baseURL string) Depot {
 	return &depot{baseURL, &http.Client{Timeout: 20 * time.Second}}
 }
@@ -52,9 +52,10 @@ func (depo *depot) packagesInfo(pkgName string, from int) (PackagesInfo, error) 
 	defer res.Body.Close()
 
 	if res.StatusCode == 404 {
-		return PackagesInfo{}, errors.New("Package not found")
-	} else if res.StatusCode/100 != 2 {
-		return PackagesInfo{}, fmt.Errorf("Unexpected status code: %d", res.StatusCode)
+		return PackagesInfo{}, errors.New("package not found")
+	}
+	if res.StatusCode/100 != 2 {
+		return PackagesInfo{}, fmt.Errorf("unexpected status code: %d", res.StatusCode)
 	}
 
 	var pkgsInfo PackagesInfo
@@ -67,7 +68,7 @@ func (depo *depot) packagesInfo(pkgName string, from int) (PackagesInfo, error) 
 	return pkgsInfo, nil
 }
 
-// PackageVersionsFromName fetch all versions from depot
+// PackageVersionsFromName fetches all versions from depot.
 func (depo *depot) PackageVersionsFromName(pkgName string, habChannel string) ([]string, error) {
 	var packages []PackageInfo
 

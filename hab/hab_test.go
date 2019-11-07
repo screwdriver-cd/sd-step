@@ -67,8 +67,12 @@ func makeFakeHTTPClient(t *testing.T, data testData) *http.Client {
 	return &http.Client{Transport: transport}
 }
 
+type fakeStruct struct{}
+
 func jsonError(JSON string) error {
-	return json.Unmarshal([]byte(JSON), nil)
+	// "dummy" object to avoid `go vet` error when passing nil
+	dummy := &fakeStruct{}
+	return json.Unmarshal([]byte(JSON), dummy)
 }
 
 func TestPackagesInfoFromName(t *testing.T) {
@@ -402,7 +406,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 			expected:      nil,
 			statusCode:    404,
 			httpError:     nil,
-			expectedError: errors.New("Package not found"),
+			expectedError: errors.New("package not found"),
 		},
 		{
 			packageName: "foo/test",
@@ -418,7 +422,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 			expected:      nil,
 			statusCode:    500,
 			httpError:     nil,
-			expectedError: errors.New("Unexpected status code: 500"),
+			expectedError: errors.New("unexpected status code: 500"),
 		},
 		{
 			packageName: "foo/test",
@@ -434,7 +438,7 @@ func TestPackagesInfoFromName(t *testing.T) {
 			expected:      nil,
 			statusCode:    500,
 			httpError:     nil,
-			expectedError: errors.New("Unexpected status code: 500"),
+			expectedError: errors.New("unexpected status code: 500"),
 		},
 		{
 			packageName: "foo/test",
