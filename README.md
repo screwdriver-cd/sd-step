@@ -9,8 +9,6 @@
 
 ```bash
 $ go get github.com/screwdriver-cd/sd-step
-$ cd $GOPATH/src/github.com/screwdriver-cd/sd-step
-$ go build -a -o sd-step
 $ ./sd-step --help
 NAME:
    sd-step - wrapper command of habitat for Screwdriver

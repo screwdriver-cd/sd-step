@@ -31,8 +31,8 @@ func TestRunCommand(t *testing.T) {
 	if err != nil {
 		t.Errorf("runCommand error = %q, should be nil", err)
 	}
-	if string(stdout.Bytes()) != expected {
-		t.Errorf("Expected '%v', actual '%v'", expected, string(stdout.Bytes()))
+	if s := stdout.String(); s != expected {
+		t.Errorf("Expected '%v', actual '%v'", expected, s)
 	}
 
 	stdout = new(bytes.Buffer)
@@ -41,8 +41,8 @@ func TestRunCommand(t *testing.T) {
 	if err != nil {
 		t.Errorf("runCommand error = %v, should be nil", err)
 	}
-	if string(stdout.Bytes()) != expected {
-		t.Errorf("Expected '%v', actual '%v'", expected, string(stdout.Bytes()))
+	if s := stdout.String(); s != expected {
+		t.Errorf("Expected '%v', actual '%v'", expected, s)
 	}
 }
 
@@ -54,8 +54,8 @@ func TestExecHab(t *testing.T) {
 	if err != nil {
 		t.Errorf("execHab error = %q, should be nil", err)
 	}
-	if string(stdout.Bytes()) != habExecResult {
-		t.Errorf("Expected %q, got %q", habExecResult, string(stdout.Bytes()))
+	if s := stdout.String(); s != habExecResult {
+		t.Errorf("Expected %q, got %q", habExecResult, s)
 	}
 }
 
@@ -146,7 +146,7 @@ func TestGetPackageVersions(t *testing.T) {
 			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.3.0", "2.0.0"},
 			expectedVersion:   "",
 			depotError:        errors.New("depot error"),
-			expectedError:     errors.New("The specified version not found"),
+			expectedError:     errors.New("the specified version not found"),
 		},
 		{
 			versionExpression: "~1.2.0",
@@ -160,7 +160,7 @@ func TestGetPackageVersions(t *testing.T) {
 			foundVersions:     []string{"0.0.1", "0.1.0", "1.1.9", "1.2.1", "1.2.2", "1.2.3-abc", "1.3.0", "2.0.0"},
 			expectedVersion:   "",
 			depotError:        nil,
-			expectedError:     errors.New("The specified version not found"),
+			expectedError:     errors.New("the specified version not found"),
 		},
 	}
 
