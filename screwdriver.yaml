@@ -2,6 +2,7 @@ shared:
     image: golang
     environment:
         GOPATH: /sd/workspace
+        GO111MODULE: on
 
 jobs:
     main:
